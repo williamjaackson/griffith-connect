@@ -1,0 +1,7 @@
+version: '3.8'
+services:
+  bot:
+    build: ./discord
+    environment:
+      - DISCORD_TOKEN=${DISCORD_TOKEN}
+    restart: unless-stopped

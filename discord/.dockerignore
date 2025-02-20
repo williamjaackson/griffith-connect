@@ -1,5 +1,6 @@
-.env
 node_modules
-package-lock.json
 dist
+*.log
+.env
+.git
 .DS_Store
