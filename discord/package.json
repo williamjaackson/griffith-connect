@@ -1,5 +1,5 @@
 {
-    "name": "discord-bot",
+    "name": "discord",
     "version": "1.0.0",
     "main": "dist/index.js",
     "scripts": {
@@ -9,5 +9,10 @@
     "dependencies": {
       "discord.js": "^14.14.1",
       "typescript": "^5.0.0"
+    },
+    "devDependencies": {
+      "ts-node": "^10.9.1",
+      "nodemon": "^3.0.1"
     }
   }
+  

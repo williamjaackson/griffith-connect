@@ -6,7 +6,6 @@ const client = new Client({
 
 client.once('ready', () => {
   console.log('Bot is ready!');
-  client.user?.setActivity('grimly doing work...', { type: 0 });
 });
 
 client.login(process.env.DISCORD_TOKEN);
