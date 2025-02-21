@@ -118,7 +118,7 @@ async function OTPModalSubmission(interaction: Interaction) {
         
     const mongo = await getMongoClient();
     const colDiscordUsers = mongo.db('griffith-connect').collection('discord-users')
-    const colCampusUsers  = mongo.db('griffith-connect').collection( 'campus-users')
+    const colCampusUsers = mongo.db('griffith-connect').collection('campus-users')
 
     // remove any existing connections between either account.
     await colDiscordUsers.deleteMany({ studentNumber })
