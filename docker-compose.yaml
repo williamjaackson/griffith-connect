@@ -7,6 +7,24 @@ services:
     depends_on:
       - redis
 
+  puppeteer:
+    build: ./puppeteer
+    env_file:
+      - ./.env
+    restart: unless-stopped
+    # depends_on:
+      # - redis
+    # Puppeteer needs these capabilities for Chrome to run in container
+    cap_add:
+      - SYS_ADMIN
+    # Recommended security options for running Chrome in container
+    security_opt: 
+      - seccomp=unconfined
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./screenshots:/usr/src/app/screenshots
+
   redis:
     image: redis:alpine
     restart: unless-stopped

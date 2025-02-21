@@ -1,3 +1,4 @@
+import { MessageFlags } from "discord.js";
 import { config } from "./config";
 import { getRedisClient } from "./redis";
 
@@ -12,7 +13,7 @@ export async function checkCooldown(interaction: any) {
         const lastRequestTime = parseInt(lastRequest, 10);
         await interaction.reply({
             content: `You are on cooldown! You can do that again <t:${Math.ceil(lastRequestTime/1000) + cooldown}:R>.`,
-            ephemeral: true
+            flags: MessageFlags.Ephemeral
         });
         return false;
     }

@@ -45,7 +45,7 @@ export async function emailTemplate(
     ]);
 
     // Send email
-    // const response = await resend.emails.send({
+    // await resend.emails.send({
     //     from: "Griffith ICT Club <no-reply@griffithict.com>",
     //     to: [email],
     //     subject: subject,

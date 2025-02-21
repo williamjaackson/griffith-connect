@@ -1,7 +1,10 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, Events, Interaction, MessageFlags, ModalBuilder, TextInputBuilder, TextInputStyle } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, EmbedBuilder, Events, Interaction, MessageFlags, ModalBuilder, TextChannel, TextInputBuilder, TextInputStyle } from "discord.js";
 import { generateOTP, validateOTP } from "../../lib/otp";
 import { emailTemplate } from "../../lib/resend";
 import { checkCooldown } from "../../lib/cooldown";
+import { getMongoClient } from "../../lib/mongo";
+import { config } from "../../lib/config";
+import axios from "axios";
 
 export const event = Events.InteractionCreate;
 export const once = false;
@@ -112,10 +115,88 @@ async function OTPModalSubmission(interaction: Interaction) {
         return await interaction.editReply({
             content: 'You entered an incorrect OTP.'
         })
-    
+        
+    const mongo = await getMongoClient();
+    const colDiscordUsers = mongo.db('griffith-connect').collection('discord-users')
+    const colCampusUsers  = mongo.db('griffith-connect').collection( 'campus-users')
+
+    // remove any existing connections between either account.
+    await colDiscordUsers.deleteMany({ studentNumber })
+    await colDiscordUsers.deleteMany({ discordUser: interaction.user.id })
+
+    await colDiscordUsers.insertOne({
+        studentNumber,
+        discordUser: interaction.user.id,
+    })
+
+    // give user role config.ROLES.STUDENT
+    if (interaction.guild && interaction.member) {
+        const member = await interaction.guild.members.fetch(interaction.user.id);
+        await member.roles.add(config.ROLES.STUDENT);
+    }
+
     await interaction.editReply({
         content: `<@${interaction.user.id}> has been linked to \`${studentNumber}\`.`
     })
+
+    const response = await axios.get('http://puppeteer:3000/update-members');
+    if (response.status !== 200) {
+        console.error('Failed to update members:', response.status, response.statusText);
+    }
+
+    // check if user is in campus.
+    const campusUser = await colCampusUsers.findOne({ studentNumber });
+    if (campusUser) {
+        if (interaction.guild && interaction.member) {
+            const member = await interaction.guild.members.fetch(interaction.user.id);
+            await member.roles.add(config.ROLES.CLUB_MEMBER);
+        }
+        return;
+    }
+
+
+    await interaction.user.send({
+        embeds: [new EmbedBuilder()
+            .setTitle('Become a Club Member')
+            .setColor(0x2b2d31)
+            .setThumbnail('https://i.postimg.cc/mrpv4Mqx/temp-Imagep-ZGw-L0.avif')
+            .setFooter({
+                text: 'Griffith Connect • Powered by Griffith ICT Club <https://wwwgriffithict.com/>'
+            })
+            .setDescription(`Heyo <@${interaction.user.id}>! 👋\n\nI noticed you aren't a Club Member yet! We'd love to have you as a member.`)
+            .addFields([{
+                name: 'Why should I join?',
+                value: `- Exclusive club-only chat channels; and\n- Exciting events like hackathons and CTF competitions; and\n- A great community where you can meet and connect with like-minded people.`
+            },{
+                name: 'Ready to join?',
+                value: `You can sign up through Griffith CampusGroups - just select your campus:`
+            }])
+        ],
+        components: [new ActionRowBuilder<ButtonBuilder>().addComponents(
+            new ButtonBuilder()
+                .setLabel('Gold Coast')
+                .setStyle(ButtonStyle.Link)
+                .setURL('https://griffith.campusgroups.com/GIC/club_signup'),
+            new ButtonBuilder()
+                .setLabel('Brisbane/Online')
+                .setStyle(ButtonStyle.Link)
+                .setURL('https://griffith.campusgroups.com/GICT/club_signup'),
+            new ButtonBuilder()
+                .setCustomId('welcome/link/club-invite:0')
+                .setLabel(`I'm already a Club Member`)
+                .setStyle(ButtonStyle.Danger)
+        )]
+    }).catch(() => {});
+}
+
+async function clubMemberButtonPressed(interaction: Interaction) {
+    if (!interaction.isButton()) return;
+    if (interaction.customId !== 'welcome/link/club-invite:0') return;
+
+    await interaction.reply({
+        content: 'Please contact a Club Executive to rectify.',
+        flags: MessageFlags.Ephemeral
+    });
 }
 
 export async function execute(interaction: Interaction) {
@@ -123,4 +204,5 @@ export async function execute(interaction: Interaction) {
     await studentNumberModalSubmission(interaction);
     await OTPButtonPressed(interaction);
     await OTPModalSubmission(interaction);
+    await clubMemberButtonPressed(interaction);
 }

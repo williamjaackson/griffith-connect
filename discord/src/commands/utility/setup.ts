@@ -47,7 +47,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 '• You are a past student of Griffith University,\n' +
                 '• You need access to this server for another reason.'
         })
-        .setThumbnail('attachment://griffith-connect.png')
+        .setThumbnail('https://i.postimg.cc/mrpv4Mqx/temp-Imagep-ZGw-L0.avif')
         .setColor(0x2b2d31)
         .setFooter({
             text: 'Griffith Connect • Powered by Griffith ICT Club <https://wwwgriffithict.com/>'
@@ -55,7 +55,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
     await channel.send({
         embeds: [embed],
-        files: ['./assets/griffith-connect.png'],
+        // files: ['./assets/griffith-connect.png'],
         components: [row as ActionRowBuilder<ButtonBuilder>]
     })
 

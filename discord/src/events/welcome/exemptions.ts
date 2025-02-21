@@ -28,7 +28,8 @@ async function confirmButtonPressed(interaction: Interaction) {
     if (interaction.channel?.type !== ChannelType.GuildText) return;
 
     await interaction.deferReply({
-        ephemeral: true
+        withResponse: true,
+        flags: MessageFlags.Ephemeral
     });
 
     const thread = await interaction.channel.threads.create({
