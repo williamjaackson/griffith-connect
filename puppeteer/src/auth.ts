@@ -1,6 +1,7 @@
 import puppeteer from "puppeteer";
 import { TOTP } from "totp-generator";
 import { getMongoClient } from "./lib/mongo";
+import { getRedisClient } from "./lib/redis";
 
 async function loginFlow(student_id: string, password: string, otp_id: string, otp_secret: string) {
     const browser = await puppeteer.launch();
@@ -45,13 +46,13 @@ async function loginFlow(student_id: string, password: string, otp_id: string, o
 }
 
 async function sessionCookies() {
-    // const data = await col_cookies.findOne({});
+    const redis = await getRedisClient();
 
-    // if (data) {
-    //     if (Date.now() - data.timestamp < parseInt(process.env.SESSION_CACHE_DURATION ?? '0') * 1000) {
-    //         return data.cookies;
-    //     }
-    // }
+    const cachedCookies = await redis.get('cookies');
+    if (cachedCookies) {
+        return JSON.parse(cachedCookies);
+    }
+
     const cookies = await loginFlow(
         process.env.GRIFFITH_USERNAME!,
         process.env.GRIFFITH_PASSWORD!,
@@ -59,8 +60,7 @@ async function sessionCookies() {
         process.env.OTP_SECRET!
     );
 
-    // await col_cookies.updateOne({}, { $set: { cookies, timestamp: Date.now() } }, { upsert: true });
-
+    await redis.setEx('cookies', 1800, JSON.stringify(cookies));
     return cookies;
 }
 
