@@ -1,0 +1,11 @@
+{
+    "OTP_TIMEOUT": 600,
+    "ROLES": {
+        "STAFF_EXEMPTION_PING": "1342164828533555201"
+    },
+    "COOLDOWN": {
+        "welcome/exemption:1": 3600,
+        "welcome/link:1": 30,
+        "welcome/link:3": 30
+    }
+}

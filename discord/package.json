@@ -3,16 +3,18 @@
     "version": "1.0.0",
     "main": "dist/index.js",
     "scripts": {
-      "build": "tsc",
-      "start": "node dist/index.js"
+        "build": "tsc",
+        "start": "node dist/index.js"
     },
     "dependencies": {
-      "discord.js": "^14.14.1",
-      "typescript": "^5.0.0"
+        "discord.js": "^14.14.1",
+        "mongodb": "^6.13.1",
+        "redis": "^4.7.0",
+        "resend": "^4.1.2",
+        "typescript": "^5.0.0"
     },
     "devDependencies": {
-      "ts-node": "^10.9.1",
-      "nodemon": "^3.0.1"
+        "nodemon": "^3.0.1",
+        "ts-node": "^10.9.1"
     }
-  }
-  
+}

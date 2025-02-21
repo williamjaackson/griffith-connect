@@ -1,6 +1,15 @@
 services:
-  bot:
+  discord:
     build: ./discord
     env_file:
       - ./.env
     restart: unless-stopped
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes

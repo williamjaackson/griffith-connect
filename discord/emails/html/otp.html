@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Number Verification</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333333;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 16px;
+        }
+        .header {
+            background-color: #ff2d2d;
+            color: white;
+            padding: 16px;
+            text-align: center;
+            border-radius: 4px 4px 0 0;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .content {
+            background-color: #ffffff;
+            padding: 24px;
+            border-radius: 0 0 4px 4px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        .logo-container {
+            text-align: center;
+            padding: 16px 0;
+        }
+        .logo {
+            max-width: 160px;
+            height: auto;
+        }
+        .otp {
+            background-color: #f8f8f8;
+            border: 2px dashed #ff2d2d;
+            border-radius: 4px;
+            font-size: 28px;
+            font-weight: bold;
+            color: #333333;
+            text-align: center;
+            padding: 16px;
+            margin: 16px 0;
+            letter-spacing: 4px;
+        }
+        .expiry-note {
+            text-align: center;
+            color: #666666;
+            font-size: 14px;
+            margin-top: -8px;
+            margin-bottom: 16px;
+        }
+        .footer {
+            text-align: center;
+            font-size: 14px;
+            color: #666666;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid #eeeeee;
+        }
+        a {
+            color: #ff2d2d;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        p {
+            margin: 16px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Student Number Verification</h1>
+        </div>
+        <div class="content">
+            <div class="logo-container">
+                <img src="https://i.postimg.cc/BQfyS8PL/GIC.png" alt="GIC Logo" class="logo">
+            </div>
+            <p>Hello {{studentNumber}},</p>
+            <p>Verify your student number with the One Time Password (OTP):</p>
+            <div class="otp">{{otp}}</div>
+            <div class="expiry-note">This code will expire in 10 minutes</div>
+            <p>If you did not request this action, you can safely ignore it.</p>
+            <div class="footer">
+                This message is in relation to the Griffith ICT Club's discord server<br>
+                <a href="https://discord.gg/kAndyQEKxG">https://discord.gg/kAndyQEKxG</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
