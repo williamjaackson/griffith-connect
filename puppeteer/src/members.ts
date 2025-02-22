@@ -2,8 +2,8 @@ import puppeteer from "puppeteer";
 import { sessionCookies } from "./auth";
 import axios from "axios";
 import csvToJson from "./lib/csv";
-import { getMongoClient } from "./lib/mongo";
 import { getRedisClient } from "./lib/redis";
+import { getDatabaseClient } from "./lib/database";
 
 export async function updateMembers() {
     const cookies = await sessionCookies();
@@ -20,69 +20,120 @@ export async function updateMembers() {
         cookieString += cookie.name + '=' + cookie.value + '; '
     }
     
-    const mongo = await getMongoClient();
-    const colCampusUsers = mongo.db('griffith-connect').collection('campus-users');
-    const snapshot = await colCampusUsers.find({}).toArray();
-    await colCampusUsers.deleteMany({})
+    const sql = await getDatabaseClient();
+    const redis = await getRedisClient();
+    // const snapshot = await sql('SELECT * FROM campus_users');
     
-    const clubs = [{
-        name: 'GIC',
-        id: '24237'
-    },{
-        name: 'GICT',
-        id: '24236'
-    }];
-    
-    const memberCache: any = [];
-    
-    // Process clubs sequentially using for...of to ensure proper async handling
+    const clubs = await sql('SELECT * FROM clubs');
+
+    // needs to run in-order because of state-dependant session cookies.
     for (const club of clubs) {
         const page = await browser.newPage();
         await page.goto('https://griffith.campusgroups.com/groups');
         await page.goto(`https://griffith.campusgroups.com/officer_login_redirect?club_id=${club.id}`);
         await page.goto('https://griffith.campusgroups.com/members_list?status=members');
         await page.close();
-        
+
         const response = await axios.get(
             'https://griffith.campusgroups.com/mobile_ws/v17/mobile_manage_members?range=0&limit=&filter1=members&filter4_contains=undefined&filter4_notcontains=undefined&filter6_contains=OR&filter6_notcontains=OR&filter9_contains=undefined&filter9_notcontains=undefined&order=&search_word=&mode=&update=7&select_all=1&checkbox_ids=&actionParam=undefined',
             { headers: { Cookie: cookieString } }
         );
-        
-        const members = csvToJson(response.data);
-        
-        // Use Promise.all for parallel processing of member insertions
-        await Promise.all(members.map(async (member: any) => {
-            const studentNumber = member['Email'].match(/s\d{7}/)?.[0] || null;
-            if (memberCache.includes(member['User Identifier'])) {
-                await colCampusUsers.updateOne({ userId: member['User Identifier'] }, { $push: { club: club.name } as any });
-                return;
+
+        const clubMembers = csvToJson(response.data);
+
+        await Promise.all(clubMembers.map(async (clubMember: any) => {
+            const [existingClubMember] = await sql('SELECT * FROM club_members WHERE id = $1', [clubMember['Member Identifier']]);
+            if (existingClubMember) return;
+
+            const [campusUser] = await sql('SELECT * FROM campus_users WHERE id = $1', [clubMember['User Identifier']]);
+            if (!campusUser) {
+                // if available, take the student number from emails like: s5424018@griffithuni.edu.au
+                const studentNumber = clubMember['Email'].match(/(s\d{7})@griffithuni.edu.au/)?.[1] || null;
+                console.log(clubMember['Email'], studentNumber)
+    
+                if (studentNumber) {
+                    await sql('INSERT INTO griffith_students (student_number, first_name, last_name) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING RETURNING *', [
+                        studentNumber,
+                        clubMember['First Name'],
+                        clubMember['Last Name']
+                    ])
+                }
+
+                const [campusUser] = await sql('INSERT INTO campus_users (id, student_number, email) VALUES ($1, $2, $3) RETURNING *', [
+                    clubMember['User Identifier'],
+                    studentNumber,
+                    clubMember['Email']
+                ]);
+
+                console.log('sending event...')
+                // the user joined their first club with us.
+                await redis.publish('new-member', JSON.stringify({
+                    campusUser,
+                    club: club
+                }))
             }
-            memberCache.push(member['User Identifier']);
-            await colCampusUsers.insertOne({
-                studentNumber,
-                userId: member['User Identifier'],
-                memberId: member['Member Identifier'],
-                firstName: member['First Name'],
-                lastName: member['Last Name'],
-                email: member['Email'],
-                accountType: member['Account Type'],
-                signupDate: member['Signup Date'],
-                club: [club.name]
-            });
-        }));
+
+            await sql('INSERT INTO club_members (id, campus_id, club) VALUES ($1, $2, $3)', [
+                clubMember['Member Identifier'],
+                clubMember['User Identifier'],
+                club.id
+            ]);
+        }))
     }
+
+
     
-    const members = await colCampusUsers.find({}).toArray();
+    // const memberCache: any = [];
     
-    const newMembers = members.filter(member => !snapshot.find(snapshotMember => snapshotMember.userId === member.userId));
-    // console.log('newMembers', newMembers)
-    // for member in new members, check if they are verified in the discord server. if they are give them the Club Member role.
-    if (newMembers.length > 0) {
-        const redis = await getRedisClient();
-        await redis.publish('new-members', JSON.stringify({
-            type: 'NEW_MEMBERS',
-            members: newMembers
-        }));
-        return;
-    }
+    // // Process clubs sequentially using for...of to ensure proper async handling
+    // for (const club of clubs) {
+    //     const page = await browser.newPage();
+    //     await page.goto('https://griffith.campusgroups.com/groups');
+    //     await page.goto(`https://griffith.campusgroups.com/officer_login_redirect?club_id=${club.id}`);
+    //     await page.goto('https://griffith.campusgroups.com/members_list?status=members');
+    //     await page.close();
+        
+    //     const response = await axios.get(
+    //         'https://griffith.campusgroups.com/mobile_ws/v17/mobile_manage_members?range=0&limit=&filter1=members&filter4_contains=undefined&filter4_notcontains=undefined&filter6_contains=OR&filter6_notcontains=OR&filter9_contains=undefined&filter9_notcontains=undefined&order=&search_word=&mode=&update=7&select_all=1&checkbox_ids=&actionParam=undefined',
+    //         { headers: { Cookie: cookieString } }
+    //     );
+        
+    //     const members = csvToJson(response.data);
+        
+    //     // Use Promise.all for parallel processing of member insertions
+    //     await Promise.all(members.map(async (member: any) => {
+    //         const studentNumber = member['Email'].match(/s\d{7}/)?.[0] || null;
+    //         if (memberCache.includes(member['User Identifier'])) {
+    //             // await colCampusUsers.updateOne({ userId: member['User Identifier'] }, { $push: { club: club.name } as any });
+    //             return await sql('UPDATE campusUsers SET club = array_append(club, $1) WHERE id = $2', [club.name, member['User Identifier']]);
+    //         }
+    //         memberCache.push(member['User Identifier']);
+    //         await sql('INSERT INTO campusUsers (id, student_number, first_name, last_name, email, account_type, signup_date, club) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)', [
+    //             member['User Identifier'],
+    //             studentNumber,
+    //             member['First Name'],
+    //             member['Last Name'],
+    //             member['Email'],
+    //             member['Account Type'],
+    //             member['Signup Date'],
+    //             [club.name]
+    //         ]);
+    //     }));
+    // }
+
+    // --------------
+    
+    // const members = await colCampusUsers.find({}).toArray();
+    
+    // const newMembers = members.filter(member => !snapshot.find(snapshotMember => snapshotMember.userId === member.userId));
+    // // console.log('newMembers', newMembers)
+    // // for member in new members, check if they are verified in the discord server. if they are give them the Club Member role.
+    // if (newMembers.length > 0) {
+    //     const redis = await getRedisClient();
+    //     await redis.publish('new-members', JSON.stringify({
+    //         type: 'NEW_MEMBERS',
+    //         members: newMembers
+    //     }));
+    //     return;
+    // }
 }

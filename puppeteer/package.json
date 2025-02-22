@@ -7,9 +7,9 @@
         "start": "node dist/index.js"
     },
     "dependencies": {
+        "@neondatabase/serverless": "^0.10.4",
         "axios": "^1.7.9",
         "express": "^4.21.2",
-        "mongodb": "^6.13.1",
         "puppeteer": "^24.2.1",
         "redis": "^4.7.0",
         "resend": "^4.1.2",

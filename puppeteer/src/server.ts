@@ -21,5 +21,5 @@ async function updateMembersInt() {
 console.log('Starting member listner.')
 
 // run updatemembersint then run every 10 minutes
-// updateMembersInt();
+updateMembersInt();
 // setInterval(updateMembersInt, 10 * 60 * 1000);

@@ -2,9 +2,9 @@ import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, EmbedBuilder
 import { generateOTP, validateOTP } from "../../lib/otp";
 import { emailTemplate } from "../../lib/resend";
 import { checkCooldown } from "../../lib/cooldown";
-import { getMongoClient } from "../../lib/mongo";
 import { config } from "../../lib/config";
 import axios from "axios";
+import { getDatabaseClient } from "../../lib/database";
 
 export const event = Events.InteractionCreate;
 export const once = false;
@@ -111,23 +111,20 @@ async function OTPModalSubmission(interaction: Interaction) {
     const otp = interaction.fields.getTextInputValue('otp')
     const studentNumber = await validateOTP(otp)
     
-    if (!studentNumber)
+    if (!studentNumber) {
         return await interaction.editReply({
             content: 'You entered an incorrect OTP.'
         })
-        
-    const mongo = await getMongoClient();
-    const colDiscordUsers = mongo.db('griffith-connect').collection('discord-users')
-    const colCampusUsers = mongo.db('griffith-connect').collection('campus-users')
+    }
 
+    const sql = await getDatabaseClient();
     // remove any existing connections between either account.
-    await colDiscordUsers.deleteMany({ studentNumber })
-    await colDiscordUsers.deleteMany({ discordUser: interaction.user.id })
-
-    await colDiscordUsers.insertOne({
-        studentNumber,
-        discordUser: interaction.user.id,
-    })
+    await sql(`
+        BEGIN;
+            DELETE FROM discord_members WHERE id = $1 OR student_number = $2;
+            INSERT INTO discord_members (id, student_number) VALUES ($1, $2);
+        COMMIT;
+    `, [interaction.user.id, studentNumber]);
 
     // give user role config.ROLES.STUDENT
     if (interaction.guild && interaction.member) {
@@ -145,15 +142,8 @@ async function OTPModalSubmission(interaction: Interaction) {
     }
 
     // check if user is in campus.
-    const campusUser = await colCampusUsers.findOne({ studentNumber });
-    if (campusUser) {
-        if (interaction.guild && interaction.member) {
-            const member = await interaction.guild.members.fetch(interaction.user.id);
-            await member.roles.add(config.ROLES.CLUB_MEMBER);
-        }
-        return;
-    }
-
+    const [campusUser] = await sql('SELECT * FROM campus_users WHERE student_number = $1', [studentNumber]);
+    if (campusUser) return;
 
     await interaction.user.send({
         embeds: [new EmbedBuilder()
