@@ -1,8 +1,9 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, EmbedBuilder, MessageFlags, SlashCommandBuilder } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, EmbedBuilder, MessageFlags, PermissionFlagsBits, SlashCommandBuilder } from "discord.js";
 
 export const data = new SlashCommandBuilder()
     .setName('reverify')
-    .setDescription('Reverifies all users.');
+    .setDescription('Reverifies all users.')
+    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
 
 export async function execute(interaction: ChatInputCommandInteraction) {
     const guild = interaction.guild;
@@ -11,6 +12,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     if (!guild) return await interaction.editReply({ content: 'This command can only be used in a server.' });
 
     const members = await guild.members.list({ cache: false, limit: 1000 });
+
+    await interaction.editReply({ content: `Messaging \`${members.size}\` Members.`})
+
     members.forEach(async (member) => {
         if (member.user.bot) return;
         await member.send({ embeds: [new EmbedBuilder()
@@ -26,7 +30,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 .setLabel('Verify in Server')
                 .setStyle(ButtonStyle.Link)
                 .setURL('https://discord.com/channels/1341776256537989183/1342096153059131422/1342370528685723740')
-        )]}).catch(() => {});
+        )]}).catch((error) => {console.log('failed to reverify', member.user.id, error)});
     });
 
     await interaction.editReply({ content: 'Reverified all users.' });

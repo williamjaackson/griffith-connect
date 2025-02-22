@@ -1,4 +1,4 @@
-import { Client, Collection, EmbedBuilder, Events, OAuth2Guild } from 'discord.js';
+import { Client, EmbedBuilder, Events } from 'discord.js';
 import { getRedisClient } from '../../lib/redis';
 import { emailTemplate } from '../../lib/resend';
 import { config } from '../../lib/config';
@@ -7,7 +7,7 @@ import { getDatabaseClient } from '../../lib/database';
 export const event = Events.ClientReady;
 export const once = true;
 export async function execute(client: Client) {
-    const redis = await getRedisClient();
+    const redis = await getRedisClient(true);
     const sql = await getDatabaseClient();
 
     await redis.subscribe('new-member', async (memberDetails: any) => {
@@ -28,7 +28,7 @@ export async function execute(client: Client) {
         }
         
         const guilds = await client.guilds.fetch(config.GUILD_ID);
-        // @ts-ignore
+        // @ts-ignore hacky bullshit
         const guild = await [...guilds.values()][0].fetch();
 
         const discordMember = await guild.members.fetch(discordMemberData.id);

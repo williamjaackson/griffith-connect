@@ -1,5 +1,6 @@
 import express from 'express';
 import { updateMembers } from './members';
+import { getRedisClient } from './lib/redis';
 
 const app  = express();
 const port = 3000;
@@ -13,13 +14,16 @@ app.listen(port, () => {
     console.log(`Server listening on port ${port}`);
 });
 
-// every minute
-async function updateMembersInt() {
-    console.log('Updating members...')
-    await updateMembers();
-}
-console.log('Starting member listner.')
+async function ready() {
+    // const redis = await getRedisClient();
+    // await redis.subscribe('update-members', async () => {
+    //     await updateMembers();
+    // });
 
-// run updatemembersint then run every 10 minutes
-updateMembersInt();
-// setInterval(updateMembersInt, 10 * 60 * 1000);
+    console.log('Starting pinging...')
+    // every 10 minutes
+    await updateMembers();
+    setInterval(updateMembers, 10 * 60 * 1000);
+}
+
+ready();

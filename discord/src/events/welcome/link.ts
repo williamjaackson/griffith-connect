@@ -118,13 +118,11 @@ async function OTPModalSubmission(interaction: Interaction) {
     }
 
     const sql = await getDatabaseClient();
+    await sql('INSERT INTO griffith_students (student_number) VALUES ($1) ON CONFLICT DO NOTHING', [studentNumber]);
+
     // remove any existing connections between either account.
-    await sql(`
-        BEGIN;
-            DELETE FROM discord_members WHERE id = $1 OR student_number = $2;
-            INSERT INTO discord_members (id, student_number) VALUES ($1, $2);
-        COMMIT;
-    `, [interaction.user.id, studentNumber]);
+    await sql('DELETE FROM discord_members WHERE id = $1 OR student_number = $2', [interaction.user.id, studentNumber]);
+    await sql('INSERT INTO discord_members (id, student_number) VALUES ($1, $2)', [interaction.user.id, studentNumber]);
 
     // give user role config.ROLES.STUDENT
     if (interaction.guild && interaction.member) {
