@@ -166,7 +166,7 @@ async function OTPModalSubmission(interaction: Interaction) {
             .setDescription(`Heyo <@${interaction.user.id}>! 👋\n\nI noticed you aren't a Club Member yet! We'd love to have you as a member.`)
             .addFields([{
                 name: 'Why should I join?',
-                value: `- Exclusive club-only chat channels; and\n- Exciting events like hackathons and CTF competitions; and\n- A great community where you can meet and connect with like-minded people.`
+                value: `- Exclusive club-only chat channels; and\n- Exciting events like hackathons and CTF competitions; and\n- A great community where you can meet and connect with like-minded people; and\n- it's FREE!`
             },{
                 name: 'Ready to join?',
                 value: `You can sign up through Griffith CampusGroups - just select your campus:`

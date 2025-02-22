@@ -3,7 +3,7 @@ import path from 'path';
 import fs from 'fs';
 
 const client = new Client({
-  intents: [GatewayIntentBits.Guilds]
+  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers]
 });
 
 declare module 'discord.js' {

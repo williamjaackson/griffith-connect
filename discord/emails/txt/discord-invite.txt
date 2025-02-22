@@ -1,0 +1,18 @@
+Hello {{name}},
+
+Welcome to the Griffith ICT Club! We're excited to have you join our community.
+We noticed you haven't joined our Discord server yet. Here's what you're missing out on:
+
+| 🏆 CTF & HACKATHON EVENTS
+| Get exclusive access to upcoming Capture The Flag competitions and hackathons. Form teams, share strategies, and compete together!
+| 
+| 💬 ACTIVE COMMUNITY CHATS
+| Connect with fellow students, share resources, and get help with your tech projects. Our channels cover everything from programming to cybersecurity.
+| 
+| 🎮 SOCIAL EVENTS
+| Join our regular social events, gaming sessions, and informal meetups. It's a great way to network and make friends in the tech community!
+
+Ready to join the conversation? Join our Discord server:
+https://discord.gg/kAndyQEKxG
+
+You received this email because you joined the Griffith ICT Club on CampusGroups.

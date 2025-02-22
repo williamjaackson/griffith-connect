@@ -12,6 +12,7 @@
         "mongodb": "^6.13.1",
         "puppeteer": "^24.2.1",
         "redis": "^4.7.0",
+        "resend": "^4.1.2",
         "totp-generator": "^1.0.0"
     },
     "devDependencies": {

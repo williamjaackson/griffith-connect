@@ -12,3 +12,14 @@ app.get('/update-members', async (req, res) => {
 app.listen(port, () => {
     console.log(`Server listening on port ${port}`);
 });
+
+// every minute
+async function updateMembersInt() {
+    console.log('Updating members...')
+    await updateMembers();
+}
+console.log('Starting member listner.')
+
+// run updatemembersint then run every 10 minutes
+// updateMembersInt();
+// setInterval(updateMembersInt, 10 * 60 * 1000);
