@@ -7,9 +7,7 @@ async function main() {
     await redis.connect();
 
     await redis.flushAll()
-    // await redis.del('lock:updating_members');
-    // redis clear all
-    
+    await redis.del('lock:updating_members');
 
     await redis.subscribe('update-members', async (arg) => {
         await updateMembers()
@@ -17,5 +15,5 @@ async function main() {
 }
 
 main();
-updateMembers();
+// updateMembers();
 setInterval(updateMembers, 1000 * 60 * 10) // 10 minutes
