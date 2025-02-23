@@ -17,12 +17,11 @@ export async function execute(client: Client) {
         await redis.set('welcome:dispatch-list', '[]')
 
         await Promise.all(dispatchList.map(async (member: any) => {
-            const [discordMember] = await sql('SELECT * FROM discord_members WHERE id = $1', [member]);
             const [campusUser] = await sql(`
                 SELECT campus_users.* FROM discord_members
                 JOIN campus_users ON campus_users.student_number = discord_members.student_number 
                 WHERE discord_members.id = $1`, 
-                [discordMember.studentNumber]
+                [member]
             );
             if (campusUser) return; // user has already joined the club.
 
