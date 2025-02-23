@@ -14,7 +14,7 @@ export async function checkCooldown(interaction: any) {
         await interaction.reply({
             content: `You are on cooldown! You can do that again <t:${Math.ceil(lastRequestTime/1000) + cooldown}:R>.`,
             flags: MessageFlags.Ephemeral
-        });
+        }).catch(() => {})
         return false;
     }
     await redis.setEx(key, cooldown, Date.now().toString());
