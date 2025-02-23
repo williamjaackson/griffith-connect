@@ -45,11 +45,11 @@ export async function emailTemplate(
     ]);
 
     // Send email
-    // await resend.emails.send({
-    //     from: "Griffith ICT Club <no-reply@griffithict.com>",
-    //     to: [email],
-    //     subject: subject,
-    //     text: formattedText,
-    //     html: formattedHtml || formattedText // Fallback to text if no HTML
-    // });
+    await resend.emails.send({
+        from: "Griffith ICT Club <no-reply@griffithict.com>",
+        to: [email],
+        subject: subject,
+        text: formattedText,
+        html: formattedHtml || formattedText // Fallback to text if no HTML
+    });
 }
