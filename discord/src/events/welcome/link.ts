@@ -180,9 +180,13 @@ async function clubMemberButtonPressed(interaction: Interaction) {
 }
 
 export async function execute(interaction: Interaction) {
-    await linkButtonPressed(interaction);
-    await studentNumberModalSubmission(interaction);
-    await OTPButtonPressed(interaction);
-    await OTPModalSubmission(interaction);
-    await clubMemberButtonPressed(interaction);
+    try {
+        await linkButtonPressed(interaction);
+        await studentNumberModalSubmission(interaction);
+        await OTPButtonPressed(interaction);
+        await OTPModalSubmission(interaction);
+        await clubMemberButtonPressed(interaction);
+    } catch (error) {
+        console.log(error)
+    }
 }
