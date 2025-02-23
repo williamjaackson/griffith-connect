@@ -10,7 +10,6 @@ export async function updateMembers() {
     
     const isUpdatingLock = await redis.get('lock:updating_members');
     if (isUpdatingLock) {
-        console.log('Already updating members, skipping...');
         return;
     }
 
@@ -49,6 +48,7 @@ export async function updateMembers() {
         );
 
         const clubMembers = csvToJson(response.data);
+        const newMembers = [];
 
         await Promise.all(clubMembers.map(async (clubMember: any) => {
             const [existingClubMember] = await sql('SELECT * FROM club_members WHERE id = $1', [clubMember['Member Identifier']]);
@@ -58,7 +58,6 @@ export async function updateMembers() {
             if (!campusUser) {
                 // if available, take the student number from emails like: s5424018@griffithuni.edu.au
                 const studentNumber = clubMember['Email'].match(/(s\d{7})@griffithuni.edu.au/)?.[1] || null;
-                console.log(clubMember['Email'], studentNumber)
     
                 if (studentNumber) {
                     await sql('INSERT INTO griffith_students (student_number, first_name, last_name) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING', [
@@ -74,7 +73,6 @@ export async function updateMembers() {
                     clubMember['Email']
                 ]);
 
-                console.log('sending event...')
                 // the user joined their first club with us.
                 await redis.publish('new-member', JSON.stringify({
                     campusUser,
@@ -91,4 +89,5 @@ export async function updateMembers() {
     }
 
     await redis.del('lock:updating_members');
+    await redis.publish('updated-members', '1')
 }

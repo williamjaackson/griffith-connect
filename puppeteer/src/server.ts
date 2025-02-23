@@ -1,29 +1,21 @@
-import express from 'express';
-import { updateMembers } from './members';
-import { getRedisClient } from './lib/redis';
+import { getRedisClient } from "./lib/redis";
+import { updateMembers } from "./members";
 
-const app  = express();
-const port = 3000;
+async function main() {
+    let redis = await getRedisClient();
+    redis = await redis.duplicate();
+    await redis.connect();
 
-app.get('/update-members', async (req, res) => {
-    await updateMembers();
-    res.send('Members updated');
-})
+    await redis.flushAll()
+    // await redis.del('lock:updating_members');
+    // redis clear all
+    
 
-app.listen(port, () => {
-    console.log(`Server listening on port ${port}`);
-});
-
-async function ready() {
-    // const redis = await getRedisClient();
-    // await redis.subscribe('update-members', async () => {
-    //     await updateMembers();
-    // });
-
-    console.log('Starting pinging...')
-    // every 10 minutes
-    await updateMembers();
-    setInterval(updateMembers, 10 * 60 * 1000);
+    await redis.subscribe('update-members', async (arg) => {
+        await updateMembers()
+    })
 }
 
-ready();
+main();
+updateMembers();
+setInterval(updateMembers, 1000 * 60 * 10) // 10 minutes

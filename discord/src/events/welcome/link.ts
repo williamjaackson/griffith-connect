@@ -5,6 +5,7 @@ import { checkCooldown } from "../../lib/cooldown";
 import { config } from "../../lib/config";
 import axios from "axios";
 import { getDatabaseClient } from "../../lib/database";
+import { getRedisClient } from "../../lib/redis";
 
 export const event = Events.InteractionCreate;
 export const once = false;
@@ -14,6 +15,33 @@ export const once = false;
 async function linkButtonPressed(interaction: Interaction) {
     if (!interaction.isButton()) return;
     if (interaction.customId !== 'welcome/link:0') return;
+    if (!await checkCooldown(interaction)) return;
+
+    const sql = await getDatabaseClient();
+    const [discordMember] = await sql('SELECT * FROM discord_members WHERE id = $1', [interaction.user.id]);
+    if (discordMember) {
+        await interaction.reply({
+            content: `<@${interaction.user.id}> has been connected to \`${discordMember.student_number}\`.`,
+            flags: MessageFlags.Ephemeral
+        });
+
+        if (interaction.guild && interaction.member) {
+            const member = await interaction.guild.members.fetch(interaction.user.id);
+            await member.roles.add(config.ROLES.STUDENT);
+        }
+
+        const [campusUser] = await sql('SELECT * FROM campus_users WHERE student_number = $1', [discordMember.student_number]);
+
+        if (campusUser) {
+            // Give the user the club member role
+            if (interaction.guild && interaction.member) {
+                const member = await interaction.guild.members.fetch(interaction.user.id);
+                await member.roles.add(config.ROLES.CLUB_MEMBER);
+            }
+        }
+
+        return;
+    }
 
     const studentNumberModal = new ModalBuilder()
         .setCustomId('welcome/link:1')
@@ -131,50 +159,17 @@ async function OTPModalSubmission(interaction: Interaction) {
     }
 
     await interaction.editReply({
-        content: `<@${interaction.user.id}> has been linked to \`${studentNumber}\`.`
+        content: `<@${interaction.user.id}> has been connected to \`${studentNumber}\`.`
     })
 
-    const response = await axios.get('http://puppeteer:3000/update-members');
-    if (response.status !== 200) {
-        console.error('Failed to update members:', response.status, response.statusText);
-    }
-
-    // check if user is in campus.
-    const [campusUser] = await sql('SELECT * FROM campus_users WHERE student_number = $1', [studentNumber]);
-    if (campusUser) return;
-
-    await interaction.user.send({
-        embeds: [new EmbedBuilder()
-            .setTitle('Become a Club Member')
-            .setColor(0x2b2d31)
-            .setThumbnail('https://i.postimg.cc/mrpv4Mqx/temp-Imagep-ZGw-L0.avif')
-            .setFooter({
-                text: 'Griffith Connect • Powered by Griffith ICT Club <https://wwwgriffithict.com/>'
-            })
-            .setDescription(`Heyo <@${interaction.user.id}>! 👋\n\nI noticed you aren't a Club Member yet! We'd love to have you as a member.`)
-            .addFields([{
-                name: 'Why should I join?',
-                value: `- Exclusive club-only chat channels; and\n- Exciting events like hackathons and CTF competitions; and\n- A great community where you can meet and connect with like-minded people; and\n- it's FREE!`
-            },{
-                name: 'Ready to join?',
-                value: `You can sign up through Griffith CampusGroups - just select your campus:`
-            }])
-        ],
-        components: [new ActionRowBuilder<ButtonBuilder>().addComponents(
-            new ButtonBuilder()
-                .setLabel('Gold Coast')
-                .setStyle(ButtonStyle.Link)
-                .setURL('https://griffith.campusgroups.com/GIC/club_signup'),
-            new ButtonBuilder()
-                .setLabel('Brisbane/Online')
-                .setStyle(ButtonStyle.Link)
-                .setURL('https://griffith.campusgroups.com/GICT/club_signup'),
-            new ButtonBuilder()
-                .setCustomId('welcome/link/club-invite:0')
-                .setLabel(`I'm already a Club Member`)
-                .setStyle(ButtonStyle.Danger)
-        )]
-    }).catch(() => {});
+    
+    const redis = await getRedisClient();
+    
+    const dispatchList = JSON.parse(await redis.get('welcome:dispatch-list') || '[]')
+    dispatchList.push(interaction.user.id)
+    await redis.set('welcome:dispatch-list', JSON.stringify(dispatchList))
+    
+    await redis.publish('update-members', '1');
 }
 
 async function clubMemberButtonPressed(interaction: Interaction) {

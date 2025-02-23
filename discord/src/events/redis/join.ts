@@ -7,12 +7,14 @@ import { getDatabaseClient } from '../../lib/database';
 export const event = Events.ClientReady;
 export const once = true;
 export async function execute(client: Client) {
-    const redis = await getRedisClient(true);
+    let redis = await getRedisClient();
+    redis = await redis.duplicate();
+    await redis.connect();
+
     const sql = await getDatabaseClient();
 
     await redis.subscribe('new-member', async (memberDetails: any) => {
         const { campusUser, club } = JSON.parse(memberDetails);
-        console.log('recieved event', memberDetails);
 
         const [griffithStudent] = await sql('SELECT * FROM griffith_students WHERE student_number = $1', [campusUser.student_number]);
         const [discordMemberData] = await sql('SELECT * FROM discord_members WHERE student_number = $1', [griffithStudent.student_number]);

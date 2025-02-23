@@ -1,6 +1,7 @@
 import { Client, Collection, Events, GatewayIntentBits, REST, Routes } from 'discord.js';
 import path from 'path';
 import fs from 'fs';
+import { getRedisClient } from './lib/redis';
 
 const client = new Client({
   intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers]

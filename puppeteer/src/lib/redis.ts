@@ -3,11 +3,11 @@ import { createClient } from 'redis';
 // Redis client instance
 let client: ReturnType<typeof createClient> | null = null;
 
-export async function getRedisClient(force = false) {
-    if (client && !force) return client;
+export async function getRedisClient() {
+    if (client) return client;
 
     // Create a new Redis client
-    const scopedClient = createClient({
+    client = createClient({
         url: process.env.REDIS_URL || 'redis://redis:6379',
         socket: {
             reconnectStrategy: (retries) => {
@@ -18,9 +18,6 @@ export async function getRedisClient(force = false) {
         }
     });
 
-    if (force) return scopedClient;
-
-    client = scopedClient
 
     // Error handling
     client.on('error', (err) => {

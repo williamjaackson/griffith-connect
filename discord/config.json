@@ -10,6 +10,7 @@
     },
     "COOLDOWN": {
         "welcome/exemption:1": 3600,
+        "welcome/link:0": 60,
         "welcome/link:1": 60,
         "welcome/link:3": 30
     },
