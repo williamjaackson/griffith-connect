@@ -29,7 +29,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
             new ButtonBuilder()
                 .setLabel('Verify in Server')
                 .setStyle(ButtonStyle.Link)
-                .setURL('https://discord.com/channels/1341776256537989183/1342096153059131422/1342370528685723740')
+                .setURL('https://discord.com/channels/1214387742293626940/1257896790934421535/1343070846276730960')
         )]}).catch((error) => {console.log('failed to reverify', member.user.id, error)});
     });
 
