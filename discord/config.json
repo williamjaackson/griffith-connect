@@ -1,9 +1,9 @@
 {
     "OTP_TIMEOUT": 600,
     "ROLES": {
-        "STAFF_EXEMPTION_PING": "1342164828533555201",
-        "STUDENT": "1342112076403048549",
-        "CLUB_MEMBER": "1342112150302494781"
+        "STAFF_EXEMPTION_PING": "1336906004339888199",
+        "STUDENT": "1257896371973914674",
+        "CLUB_MEMBER": "1336905508753506406"
     },
     "COOLDOWN": {
         "welcome/exemption:1": 3600,
@@ -11,5 +11,5 @@
         "welcome/link:1": 60,
         "welcome/link:3": 30
     },
-    "GUILD": "1341776256537989183"
+    "GUILD": "1214387742293626940"
 }
