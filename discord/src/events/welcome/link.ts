@@ -15,33 +15,6 @@ export const once = false;
 async function linkButtonPressed(interaction: Interaction) {
     if (!interaction.isButton()) return;
     if (interaction.customId !== 'welcome/link:0') return;
-    if (!await checkCooldown(interaction)) return;
-
-    const sql = await getDatabaseClient();
-    const [discordMember] = await sql('SELECT * FROM discord_members WHERE id = $1', [interaction.user.id]);
-    if (discordMember) {
-        await interaction.reply({
-            content: `<@${interaction.user.id}> has been connected to \`${discordMember.student_number}\`.`,
-            flags: MessageFlags.Ephemeral
-        });
-
-        if (interaction.guild && interaction.member) {
-            const member = await interaction.guild.members.fetch(interaction.user.id);
-            await member.roles.add(config.ROLES.STUDENT);
-        }
-
-        const [campusUser] = await sql('SELECT * FROM campus_users WHERE student_number = $1', [discordMember.student_number]);
-
-        if (campusUser) {
-            // Give the user the club member role
-            if (interaction.guild && interaction.member) {
-                const member = await interaction.guild.members.fetch(interaction.user.id);
-                await member.roles.add(config.ROLES.CLUB_MEMBER);
-            }
-        }
-
-        return;
-    }
 
     const studentNumberModal = new ModalBuilder()
         .setCustomId('welcome/link:1')
@@ -67,17 +40,41 @@ async function studentNumberModalSubmission(interaction: Interaction) {
     if (interaction.customId !== 'welcome/link:1') return;
     if (!await checkCooldown(interaction)) return;
 
-    const studentNumber = interaction.fields.getTextInputValue('studentNumber')
-    if (!/^s\d{7}$/.test(studentNumber)) 
-        return await interaction.reply({
-            content: `Invalid student number \`${studentNumber}\`. Please use the format: \`s1234567\`.`,
-            flags: MessageFlags.Ephemeral
-        })
-    
     await interaction.deferReply({
         withResponse: true,
         flags: MessageFlags.Ephemeral
     })
+
+    const sql = await getDatabaseClient();
+    const [discordMember] = await sql('SELECT * FROM discord_members WHERE id = $1', [interaction.user.id]);
+    if (discordMember) {
+        await interaction.editReply({
+            content: `<@${interaction.user.id}> has been previously connected and now re-connected to \`${discordMember.student_number}\`.`,
+        });
+
+        if (interaction.guild && interaction.member) {
+            const member = await interaction.guild.members.fetch(interaction.user.id);
+            await member.roles.add(config.ROLES.STUDENT);
+        }
+
+        const [campusUser] = await sql('SELECT * FROM campus_users WHERE student_number = $1', [discordMember.student_number]);
+
+        if (campusUser) {
+            // Give the user the club member role
+            if (interaction.guild && interaction.member) {
+                const member = await interaction.guild.members.fetch(interaction.user.id);
+                await member.roles.add(config.ROLES.CLUB_MEMBER);
+            }
+        }
+
+        return;
+    }
+
+    const studentNumber = interaction.fields.getTextInputValue('studentNumber')
+    if (!/^s\d{7}$/.test(studentNumber)) 
+        return await interaction.editReply({
+            content: `Invalid student number \`${studentNumber}\`. Please use the format: \`s1234567\`.`,
+        })
 
     const otp = await generateOTP(studentNumber);
     await emailTemplate(
