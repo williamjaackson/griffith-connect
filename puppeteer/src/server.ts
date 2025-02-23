@@ -16,4 +16,4 @@ async function main() {
 
 main();
 // updateMembers();
-setInterval(updateMembers, 1000 * 60 * 10) // 10 minutes
+setInterval(updateMembers, 1000 * 60 * 30) // 30 minutes
