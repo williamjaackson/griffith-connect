@@ -1,4 +1,6 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, EmbedBuilder, MessageFlags, PermissionFlagsBits, SlashCommandBuilder } from "discord.js";
+import fs from 'fs/promises';
+import path from 'path';
 
 export const data = new SlashCommandBuilder()
     .setName('reverify')
@@ -30,7 +32,14 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 .setLabel('Verify in Server')
                 .setStyle(ButtonStyle.Link)
                 .setURL('https://discord.com/channels/1214387742293626940/1257896790934421535/1343070846276730960')
-        )]}).catch((error) => {console.log('failed to reverify', member.user.id, error)});
+        )]}).then(async () => {
+            await fs.appendFile(
+                path.join(__dirname, '..', '..', '..', 'logs', 'reverify-log.txt'),
+                `${new Date().toISOString()},${member.user.id},${member.user.tag}\n`
+            );
+        }).catch((error) => {console.log('failed to reverify', member.user.id, error)});
+        // when successful, append the user id to a file named 'reverify-log.txt'
+        
     });
 
     await interaction.editReply({ content: 'Reverified all users.' });
