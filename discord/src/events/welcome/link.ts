@@ -85,7 +85,7 @@ async function studentNumberModalSubmission(interaction: Interaction) {
     )
 
     await interaction.editReply({
-        content: `A One Time Password (OTP) has been sent to your Griffith email address. (${studentNumber}@griffithuni.edu.au:${otp})\n-# One Time Passwords may take up to 5 minutes to arrive in your inbox. If you still haven't recieved one, click 'Resend OTP'.`,
+        content: `A One Time Password (OTP) has been sent to your Griffith email address. (${studentNumber}@griffithuni.edu.au)\n-# One Time Passwords may take up to 5 minutes to arrive in your inbox. If you still haven't recieved one, click 'Resend OTP'.`,
         // flags: MessageFlags.Ephemeral,
         components: [
             new ActionRowBuilder<ButtonBuilder>().addComponents(
