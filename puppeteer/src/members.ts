@@ -37,9 +37,9 @@ export async function updateMembers() {
     // needs to run in-order because of state-dependant session cookies.
     for (const club of clubs) {
         const page = await browser.newPage();
-        await page.goto('https://griffith.campusgroups.com/groups');
-        await page.goto(`https://griffith.campusgroups.com/officer_login_redirect?club_id=${club.id}`);
-        await page.goto('https://griffith.campusgroups.com/members_list?status=members');
+        await page.goto('https://griffith.campusgroups.com/groups', {timeout: 0});
+        await page.goto(`https://griffith.campusgroups.com/officer_login_redirect?club_id=${club.id}`, {timeout: 0});
+        await page.goto('https://griffith.campusgroups.com/members_list?status=members', {timeout: 0});
         await page.close();
 
         const response = await axios.get(

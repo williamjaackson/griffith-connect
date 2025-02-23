@@ -7,24 +7,24 @@ async function loginFlow(student_id: string, password: string, otp_id: string, o
     const page    = await browser.newPage();
     
     // Navigate to Campus Groups login page
-    await page.goto('https://www.campusgroups.com/shibboleth/login?idp=griffith&school=griffith')
+    await page.goto('https://www.campusgroups.com/shibboleth/login?idp=griffith&school=griffith', {timeout: 0})
     
     await page.type('#username', student_id);
     await page.type('#password', password);
     await page.keyboard.press('Enter');
     
-    await page.waitForNavigation();
-    await page.waitForNavigation();
-    await page.waitForNavigation();
+    await page.waitForNavigation({timeout: 0});
+    await page.waitForNavigation({timeout: 0});
+    await page.waitForNavigation({timeout: 0});
     
     // Navigate to PingID's device list
-    await page.goto('https://authenticator.pingone.com.au/pingid/ppm/devices')
+    await page.goto('https://authenticator.pingone.com.au/pingid/ppm/devices', {timeout: 0})
     
     await page.click(`[data-id="${otp_id}"]`);
     await page.click('#device-submit')
     
-    await page.waitForNavigation();
-    await page.waitForNavigation();
+    await page.waitForNavigation({timeout: 0});
+    await page.waitForNavigation({timeout: 0});
     
     // Enter PingID OTP
     const { otp } = TOTP.generate(otp_secret, { digits: 6 });
@@ -32,10 +32,10 @@ async function loginFlow(student_id: string, password: string, otp_id: string, o
     await page.type('#otp', otp);
     await page.click('input[type="submit"]')
     
-    await page.waitForNavigation();
-    await page.waitForNavigation();
-    await page.waitForNavigation();
-    await page.waitForNavigation();
+    await page.waitForNavigation({timeout: 0});
+    await page.waitForNavigation({timeout: 0});
+    await page.waitForNavigation({timeout: 0});
+    await page.waitForNavigation({timeout: 0});
     
     // Get cookies
     const browser_cookies = await browser.cookies();
