@@ -39,7 +39,7 @@ export async function execute(client: Client) {
             embeds: [new EmbedBuilder()
                 .setTitle('New Club Member')
                 .setColor(0x2b2d31)
-                .setThumbnail('https://i.postimg.cc/mrpv4Mqx/temp-Imagep-ZGw-L0.avif')
+                .setThumbnail('https://i.postimg.cc/xjkhPdbP/griffith-connect.png')
                 .setFooter({
                     text: 'Griffith Connect • Powered by Griffith ICT Club <https://wwwgriffithict.com/>'
                 })

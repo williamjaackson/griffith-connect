@@ -4,7 +4,11 @@ import fs from 'fs';
 import { getRedisClient } from './lib/redis';
 
 const client = new Client({
-  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers]
+  	intents: [
+		GatewayIntentBits.Guilds,
+		GatewayIntentBits.GuildMembers,
+		GatewayIntentBits.GuildPresences,
+	]
 });
 
 declare module 'discord.js' {

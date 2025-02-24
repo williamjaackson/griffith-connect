@@ -5,15 +5,15 @@ export const data = new SlashCommandBuilder()
     .setDescription('Hidden Setup Options (ADMIN ONLY)')
     .setContexts([InteractionContextType.Guild])
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
-   .addSubcommand(subcommand =>
-        subcommand.setName('welcome-channel')
-            .setDescription('Set the welcome channel')
-            .addChannelOption(option =>
-                option.setName('channel')
-                .setDescription('The channel to set')
-                .setRequired(true)
-                .addChannelTypes(ChannelType.GuildText)
-            ))
+    .addSubcommand(subcommand =>
+            subcommand.setName('welcome-channel')
+                .setDescription('Set the welcome channel')
+                .addChannelOption(option =>
+                    option.setName('channel')
+                    .setDescription('The channel to set')
+                    .setRequired(true)
+                    .addChannelTypes(ChannelType.GuildText)))
+
 
 export async function execute(interaction: ChatInputCommandInteraction) {
     await interaction.deferReply({ 
@@ -47,7 +47,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 '• You are a past student of Griffith University,\n' +
                 '• You need access to this server for another reason.'
         })
-        .setThumbnail('https://i.postimg.cc/mrpv4Mqx/temp-Imagep-ZGw-L0.avif')
+        .setThumbnail('https://i.postimg.cc/xjkhPdbP/griffith-connect.png')
         .setColor(0x2b2d31)
         .setFooter({
             text: 'Griffith Connect • Powered by Griffith ICT Club <https://wwwgriffithict.com/>'
