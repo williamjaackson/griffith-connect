@@ -17,6 +17,7 @@ export async function execute(client: Client) {
         const { campusUser, club } = JSON.parse(memberDetails);
 
         const [griffithStudent] = await sql('SELECT * FROM griffith_students WHERE student_number = $1', [campusUser.student_number]);
+        if (!griffithStudent) return;
         const [discordMemberData] = await sql('SELECT * FROM discord_members WHERE student_number = $1', [griffithStudent.student_number]);
         
         if (!discordMemberData) {
