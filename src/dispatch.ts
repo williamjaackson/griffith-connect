@@ -3,11 +3,13 @@ import fs from 'fs';
 import path from 'path';
 
 export function startDispatcher(client: Client) {
+    // cache all the imported flows.
     const flowDir = path.join(__dirname, 'flow');
-
+    const flowCache = new Map<string, any>();
     fs.readdirSync(flowDir).forEach(file => {
         if (file.endsWith('.ts') || file.endsWith('.js')) {
-            import(path.join(flowDir, file));
+            const flowName = file.split('.')[0];
+            flowCache.set(flowName, import(path.join(flowDir, file)));
         }
     });
 
@@ -17,10 +19,10 @@ export function startDispatcher(client: Client) {
             !interaction.isModalSubmit()) return;
         
         const [ system, action, step ] = interaction.customId.split(':');
-        if (system !== 'flow') return console.log(system, action, step);
+        if (system !== 'flow') return;
         
         try {
-            const flow = await import(`./flow/${action}`);
+            const flow = await flowCache.get(action);
             await flow['handler'](interaction, parseInt(step));
         } catch (err: any) {
             console.error(err);
