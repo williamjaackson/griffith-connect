@@ -1,0 +1,13 @@
+services:
+  discord-bot:
+    build: ./discord-bot
+    networks:
+      - griffith-connect
+  redis:
+    image: redis:latest
+    restart: unless-stopped
+    networks:
+      - griffith-connect
+  
+networks:
+  griffith-connect:
