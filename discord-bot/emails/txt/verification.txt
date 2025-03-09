@@ -1,0 +1,14 @@
+GRIFFITH CONNECT
+
+Hello {{sNumber}},
+
+Verify your student number with the Verification Code:
+{{otp}}
+This code will expire in 10 minutes.
+
+If you did not request this action, you can safely ignore it.
+
+Griffith Connect is open source: https://github.com/williamjaackson/griffith-connect
+
+---
+© 2025 William Jackson. All rights reserved.
