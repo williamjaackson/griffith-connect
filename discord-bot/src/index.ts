@@ -30,6 +30,10 @@ client.on('messageCreate', async (message) => {
                     .setCustomId('flow:connect:0')
                     .setLabel('Connect sNumber')
                     .setStyle(ButtonStyle.Secondary),
+                new ButtonBuilder()
+                    .setCustomId('flow:exempt:0')
+                    .setLabel('Exempt Apply')
+                    .setStyle(ButtonStyle.Danger),
             ])],
         });
     }
@@ -37,7 +41,7 @@ client.on('messageCreate', async (message) => {
 
 client.on(Events.GuildMemberAdd, async (member) => {
     await member.send({
-        content: `Thanks for joining! Before you can do anything you need to connect your __Griffith sNumber__.`,
+        content: 'Thanks for joining! Before you can do anything you need to connect your __Griffith sNumber__.',
         components: [new ActionRowBuilder<ButtonBuilder>().addComponents([
             new ButtonBuilder()
                 .setLabel('Go to Connect')
