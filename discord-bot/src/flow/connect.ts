@@ -67,7 +67,7 @@ async function step1(interaction: ModalSubmitInteraction) {
 
     if (existingConnection) {
         const member = await interaction.guild!.members.fetch(interaction.user.id);
-        await member.roles.add(config.connectedRole, 'Reconnected sNumber.');
+        await member.roles.add(config.connectedRole, `Reconnected sNumber. (${sNumber})`);
 
         await interaction.editReply({
             content: `You have been reconnected to \`${sNumber}\`.`,
@@ -133,7 +133,7 @@ async function step3(interaction: ModalSubmitInteraction) {
         const prevConnectedMember = await interaction.guild!.members.fetch(existingConnection.discord_user_id);
 
         if (prevConnectedMember) {
-            await prevConnectedMember.roles.remove(config.connectedRole, 'Unconnected sNumber.');
+            await prevConnectedMember.roles.remove(config.connectedRole, `Unconnected sNumber. (${sNumber})`);
         }
 
         await sql`
@@ -147,7 +147,7 @@ async function step3(interaction: ModalSubmitInteraction) {
     `;
 
     const member = await interaction.guild!.members.fetch(interaction.user.id);
-    await member.roles.add(config.connectedRole, 'Connected sNumber.');
+    await member.roles.add(config.connectedRole, `Connected sNumber. (${sNumber})`);
 
     await interaction.editReply({
         content: `${interaction.user} connected to \`${sNumber}\``,
