@@ -18,6 +18,8 @@ export function startDispatcher(client: Client) {
         if (!interaction.isMessageComponent() && 
             !interaction.isModalSubmit()) return;
         
+        if (!interaction.guild) return;
+        
         const [ system, action, step ] = interaction.customId.split(':');
         if (system !== 'flow') return;
         

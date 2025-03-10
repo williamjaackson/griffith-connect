@@ -1,13 +1,13 @@
 import { ActionRowBuilder, ButtonBuilder, ModalBuilder, TextInputBuilder } from "@discordjs/builders";
 import { randomInt } from "crypto";
-import { ButtonInteraction, ButtonStyle, CommandInteraction, MessageFlags, ModalSubmitInteraction, TextInputStyle } from "discord.js";
+import { APIInteractionGuildMember, ButtonInteraction, ButtonStyle, CommandInteraction, GuildMember, MessageFlags, ModalSubmitInteraction, TextInputStyle } from "discord.js";
 import { redisClient } from "../lib/redis";
 import { emailTemplate } from "../lib/resend";
 import { sql } from "../lib/database";
+import config from '../../config.json';
 
 const FLOW = __filename.split('/').pop()?.split('.')[0];
 
-console.log('building modal...')
 const sNumberModal = new ModalBuilder()
     .setCustomId(`flow:${FLOW}:1`)
     .setTitle('Griffith Student Number')
@@ -60,18 +60,34 @@ async function step1(interaction: ModalSubmitInteraction) {
         });
     }
 
+    // check if this sNumber is already connected to this discord account.
+    const [ existingConnection ] = await sql`
+        SELECT * FROM discord_users WHERE discord_user_id = ${interaction.user.id} AND student_number = ${sNumber}
+    `;
+
+    if (existingConnection) {
+        const member = await interaction.guild!.members.fetch(interaction.user.id);
+        await member.roles.add(config.connectedRole, 'Reconnected sNumber.');
+
+        await interaction.editReply({
+            content: `You have been reconnected to \`${sNumber}\`.`,
+        });
+
+        return;
+    }
+
     const otp = randomInt(100000, 999999).toString();
     await redisClient.setEx(`otp:${otp}`, 600, sNumber);
     
-    await emailTemplate(
-        `${sNumber}@griffithuni.edu.au`,
-        `Verification Code - Griffith ICT Club`,
-        'verification',
-        { otp, sNumber }
-    );
+    // await emailTemplate(
+    //     `${sNumber}@griffithuni.edu.au`,
+    //     `Verification Code - Griffith ICT Club`,
+    //     'verification',
+    //     { otp, sNumber }
+    // );
 
     await interaction.editReply({
-        content: `A verification code has been sent to your Griffith email address.\n\`\`\`${sNumber}@griffithuni.edu.au\`\`\``,
+        content: `A verification code has been sent to your Griffith email address.\n\`\`\`${sNumber}@griffithuni.edu.au:${otp}\`\`\``,
         components: [new ActionRowBuilder<ButtonBuilder>().addComponents([
             new ButtonBuilder()
                 .setLabel('Enter Code')
@@ -101,19 +117,37 @@ async function step3(interaction: ModalSubmitInteraction) {
 
     const code = interaction.fields.getTextInputValue('code');
 
-    const sNumber = await redisClient.get(`otp:${code}`);
+    const sNumber = await redisClient.getDel(`otp:${code}`);
     if (!sNumber) {
         return await interaction.editReply({
             content: `Invalid verification code. Please enter the correct code.`,
         });
     }
 
-    // TODO: check if already in the database / verified.
+    // existing connect, but different account or student number.
+    const [ existingConnection ] = await sql`
+        SELECT * FROM discord_users WHERE student_number = ${sNumber} OR discord_user_id = ${interaction.user.id}
+    `;
+
+    if (existingConnection) {
+        const prevConnectedMember = await interaction.guild!.members.fetch(existingConnection.discord_user_id);
+
+        if (prevConnectedMember) {
+            await prevConnectedMember.roles.remove(config.connectedRole, 'Unconnected sNumber.');
+        }
+
+        await sql`
+            DELETE FROM discord_users WHERE student_number = ${sNumber} OR discord_user_id = ${interaction.user.id}
+        `;
+    }
 
     await sql`
         INSERT INTO discord_users (discord_user_id, student_number)
         VALUES (${interaction.user.id}, ${sNumber})
     `;
+
+    const member = await interaction.guild!.members.fetch(interaction.user.id);
+    await member.roles.add(config.connectedRole, 'Connected sNumber.');
 
     await interaction.editReply({
         content: `${interaction.user} connected to \`${sNumber}\``,
