@@ -2,6 +2,7 @@ import { ActionRowBuilder, ButtonBuilder } from "@discordjs/builders";
 import { ButtonInteraction, ButtonStyle, ChannelType, MessageFlags } from "discord.js";
 import config from '../../config.json';
 import { log } from "../lib/logging";
+import { redisClient } from "../lib/redis";
 
 const FLOW = __filename.split('/').pop()?.split('.')[0];
 
@@ -25,6 +26,17 @@ async function step1(interaction: ButtonInteraction) {
         withResponse: true,
         flags: [MessageFlags.Ephemeral],
     });
+
+    // check if the user is on cooldown.
+    const COOLDOWN_LENGTH = 1 * 5;
+    const cooldown = await redisClient.get(`cooldown:${interaction.user.id}:${FLOW}`);
+
+    if (cooldown) {
+        return await interaction.editReply({
+            content: `You're on cooldown. Try again <t:${Math.ceil(parseInt(cooldown)/1000) + COOLDOWN_LENGTH}:R>.`,
+        });
+    }
+    await redisClient.setEx(`cooldown:${interaction.user.id}:${FLOW}`, COOLDOWN_LENGTH, Date.now().toString());
 
     const thread = await interaction.channel?.threads.create({
         name: `Exemption Request - @${interaction.user.username}`,

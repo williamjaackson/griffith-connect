@@ -52,6 +52,17 @@ async function step1(interaction: ModalSubmitInteraction) {
         withResponse: true,
         flags: [MessageFlags.Ephemeral],
     })
+
+    // check if the user is on cooldown.
+    const COOLDOWN_LENGTH = 1 * 5;
+    const cooldown = await redisClient.get(`cooldown:${interaction.user.id}:${FLOW}`);
+
+    if (cooldown) {
+        return await interaction.editReply({
+            content: `You're on cooldown. Try again <t:${Math.ceil(parseInt(cooldown)/1000) + COOLDOWN_LENGTH}:R>.`,
+        });
+    }
+    await redisClient.setEx(`cooldown:${interaction.user.id}:${FLOW}`, COOLDOWN_LENGTH, Date.now().toString());
     
     // verify sNumber
     const sNumber = interaction.fields.getTextInputValue('sNumber');
@@ -82,12 +93,12 @@ async function step1(interaction: ModalSubmitInteraction) {
     const otp = randomInt(100000, 999999).toString();
     await redisClient.setEx(`otp:${otp}`, 600, sNumber);
     
-    await emailTemplate(
-        `${sNumber}@griffithuni.edu.au`,
-        `Verification Code - Griffith ICT Club`,
-        'verification',
-        { otp, sNumber }
-    );
+    // await emailTemplate(
+    //     `${sNumber}@griffithuni.edu.au`,
+    //     `Verification Code - Griffith ICT Club`,
+    //     'verification',
+    //     { otp, sNumber }
+    // );
 
     await interaction.editReply({
         content: `A verification code has been sent to your Griffith email address.\n\`\`\`${sNumber}@griffithuni.edu.au\`\`\``,
