@@ -4,6 +4,8 @@ services:
     restart: unless-stopped
     networks:
       - griffith-connect
+    depends_on:
+      - redis
   redis:
     image: redis:latest
     restart: unless-stopped
