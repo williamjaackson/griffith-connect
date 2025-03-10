@@ -1,6 +1,7 @@
 services:
   discord-bot:
     build: ./discord-bot
+    restart: unless-stopped
     networks:
       - griffith-connect
   redis:
