@@ -28,7 +28,7 @@ async function step1(interaction: ButtonInteraction) {
     });
 
     // check if the user is on cooldown.
-    const COOLDOWN_LENGTH = 1 * 5;
+    const COOLDOWN_LENGTH = 60 * 5;
     const cooldown = await redisClient.get(`cooldown:${interaction.user.id}:${FLOW}`);
 
     if (cooldown) {
