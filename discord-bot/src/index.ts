@@ -21,25 +21,6 @@ client.once(Events.ClientReady, async () => {
 
 startDispatcher(client);
 
-// this is a temporary 'command' to test the bot's functionality
-client.on('messageCreate', async (message) => {
-    if (message.content === '!verify') {
-        await message.reply({
-            content: 'Verify!',
-            components: [new ActionRowBuilder<ButtonBuilder>().addComponents([
-                new ButtonBuilder()
-                    .setCustomId('flow:connect:0')
-                    .setLabel('Connect sNumber')
-                    .setStyle(ButtonStyle.Secondary),
-                new ButtonBuilder()
-                    .setCustomId('flow:exempt:0')
-                    .setLabel('Exempt Apply')
-                    .setStyle(ButtonStyle.Danger),
-            ])],
-        });
-    }
-})
-
 client.on(Events.GuildMemberAdd, async (member) => {
     await member.send({
         content: 'Thanks for joining! Before you can do anything you need to connect your __Griffith sNumber__.',

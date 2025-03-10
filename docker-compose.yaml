@@ -2,10 +2,10 @@ services:
   discord-bot:
     build: ./discord-bot
     restart: unless-stopped
-    networks:
-      - griffith-connect
     depends_on:
       - redis
+    networks:
+      - griffith-connect
   redis:
     image: redis:latest
     restart: unless-stopped
