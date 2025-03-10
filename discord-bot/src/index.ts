@@ -1,5 +1,5 @@
 import { ActionRowBuilder, ButtonBuilder } from '@discordjs/builders';
-import { ButtonStyle, Client, Events, GatewayIntentBits, REST, Routes } from 'discord.js';
+import { ButtonStyle, Client, Events, GatewayIntentBits } from 'discord.js';
 import dotenv from 'dotenv';
 import { startDispatcher } from './dispatch';
 import { redisClient } from './lib/redis';
@@ -9,7 +9,7 @@ import { deployCommands } from './commands';
 dotenv.config();
 
 const client = new Client({ 
-    intents: [ GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent ],
+    intents: [ GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildMessages ],
 });
 
 client.once(Events.ClientReady, async () => {

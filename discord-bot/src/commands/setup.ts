@@ -25,13 +25,13 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     const channel: TextChannel = interaction.options.getChannel('channel', true);
 
     const btn_link = new ButtonBuilder()
-        .setCustomId('welcome/link:0')
+        .setCustomId('flow:connect:0')
         .setLabel('Connect sNumber')
         .setEmoji(config.emoji)
         .setStyle(ButtonStyle.Secondary);
 
     const btn_exempt = new ButtonBuilder()
-        .setCustomId('welcome/exemption:0')
+        .setCustomId('flow:exempt:0')
         .setLabel('Request Exemption')
         .setStyle(ButtonStyle.Danger);
 
@@ -49,7 +49,10 @@ export async function execute(interaction: ChatInputCommandInteraction) {
                 '• You need access to this server for another reason.'
         })
         .setThumbnail(interaction.client.user?.displayAvatarURL())
-        .setColor(0x2b2d31);
+        .setColor(0x2b2d31)
+        .setFooter({
+            text: 'Griffith Connect • Powered by Griffith ICT Club <https://www.griffithict.com/>'
+        })
 
     await channel.send({
         embeds: [embed],
