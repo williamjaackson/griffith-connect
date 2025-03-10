@@ -1,10 +1,11 @@
 import { ActionRowBuilder, ButtonBuilder, ModalBuilder, TextInputBuilder } from "@discordjs/builders";
 import { randomInt } from "crypto";
-import { APIInteractionGuildMember, ButtonInteraction, ButtonStyle, CommandInteraction, GuildMember, MessageFlags, ModalSubmitInteraction, TextInputStyle } from "discord.js";
+import { ButtonInteraction, ButtonStyle, CommandInteraction, MessageFlags, ModalSubmitInteraction, TextInputStyle } from "discord.js";
 import { redisClient } from "../lib/redis";
 import { emailTemplate } from "../lib/resend";
 import { sql } from "../lib/database";
 import config from '../../config.json';
+import { log } from "../lib/logging";
 
 const FLOW = __filename.split('/').pop()?.split('.')[0];
 
@@ -73,6 +74,8 @@ async function step1(interaction: ModalSubmitInteraction) {
             content: `You have been reconnected to \`${sNumber}\`.`,
         });
 
+        await log(interaction.client, `${interaction.user} reconnected to ${sNumber}`);
+
         return;
     }
 
@@ -99,6 +102,8 @@ async function step1(interaction: ModalSubmitInteraction) {
                 .setStyle(ButtonStyle.Secondary),
         ])],
     });
+
+    await log(interaction.client, `${interaction.user} has requested to connect to ${sNumber}`);
 }
 
 // step2. called when the user clicks the 'Enter Code' button.
@@ -119,9 +124,13 @@ async function step3(interaction: ModalSubmitInteraction) {
 
     const sNumber = await redisClient.getDel(`otp:${code}`);
     if (!sNumber) {
-        return await interaction.editReply({
+        await interaction.editReply({
             content: `Invalid verification code. Please enter the correct code.`,
         });
+
+        await log(interaction.client, `${interaction.user} entered an invalid verification code.`);
+
+        return;
     }
 
     // existing connect, but different account or student number.
@@ -139,6 +148,8 @@ async function step3(interaction: ModalSubmitInteraction) {
         await sql`
             DELETE FROM discord_users WHERE student_number = ${sNumber} OR discord_user_id = ${interaction.user.id}
         `;
+
+        await log(interaction.client, `${prevConnectedMember.user} disconnected from ${existingConnection.student_number} by ${interaction.user}`);
     }
 
     await sql`
@@ -148,10 +159,13 @@ async function step3(interaction: ModalSubmitInteraction) {
 
     const member = await interaction.guild!.members.fetch(interaction.user.id);
     await member.roles.add(config.connectedRole, `Connected sNumber. (${sNumber})`);
+    
 
     await interaction.editReply({
         content: `${interaction.user} connected to \`${sNumber}\``,
     });
+
+    await log(interaction.client, `${interaction.user} connected to ${sNumber}`);
 }
 
 export async function handler(interaction: any, stage: number) {

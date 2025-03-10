@@ -1,6 +1,7 @@
 import { ActionRowBuilder, ButtonBuilder } from "@discordjs/builders";
 import { ButtonInteraction, ButtonStyle, ChannelType, MessageFlags } from "discord.js";
 import config from '../../config.json';
+import { log } from "../lib/logging";
 
 const FLOW = __filename.split('/').pop()?.split('.')[0];
 
@@ -39,6 +40,8 @@ async function step1(interaction: ButtonInteraction) {
     await interaction.editReply({
         content: `Created request channel <#${thread.id}>.`
     });
+
+    await log(interaction.client, `User ${interaction.user.tag} opened an exemption request <#${thread.id}>`);
 }
 
 export async function handler(interaction: any, stage: number) {
