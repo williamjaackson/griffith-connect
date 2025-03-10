@@ -79,15 +79,15 @@ async function step1(interaction: ModalSubmitInteraction) {
     const otp = randomInt(100000, 999999).toString();
     await redisClient.setEx(`otp:${otp}`, 600, sNumber);
     
-    // await emailTemplate(
-    //     `${sNumber}@griffithuni.edu.au`,
-    //     `Verification Code - Griffith ICT Club`,
-    //     'verification',
-    //     { otp, sNumber }
-    // );
+    await emailTemplate(
+        `${sNumber}@griffithuni.edu.au`,
+        `Verification Code - Griffith ICT Club`,
+        'verification',
+        { otp, sNumber }
+    );
 
     await interaction.editReply({
-        content: `A verification code has been sent to your Griffith email address.\n\`\`\`${sNumber}@griffithuni.edu.au:${otp}\`\`\``,
+        content: `A verification code has been sent to your Griffith email address.\n\`\`\`${sNumber}@griffithuni.edu.au\`\`\``,
         components: [new ActionRowBuilder<ButtonBuilder>().addComponents([
             new ButtonBuilder()
                 .setLabel('Enter Code')
