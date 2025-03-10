@@ -1,9 +1,10 @@
 import { ActionRowBuilder, ButtonBuilder } from '@discordjs/builders';
-import { ButtonStyle, Client, Events, GatewayIntentBits } from 'discord.js';
+import { ButtonStyle, Client, Events, GatewayIntentBits, REST, Routes } from 'discord.js';
 import dotenv from 'dotenv';
 import { startDispatcher } from './dispatch';
 import { redisClient } from './lib/redis';
 import config from '../config.json';
+import { deployCommands } from './commands';
 
 dotenv.config();
 
@@ -51,5 +52,6 @@ client.on(Events.GuildMemberAdd, async (member) => {
     })
 });
 
+deployCommands(client);
 
 client.login(process.env.DISCORD_TOKEN);

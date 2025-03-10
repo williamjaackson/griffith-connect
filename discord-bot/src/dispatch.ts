@@ -1,4 +1,4 @@
-import { Client, MessageFlags } from "discord.js";
+import { Client, Events, MessageFlags } from "discord.js";
 import fs from 'fs';
 import path from 'path';
 
@@ -14,7 +14,7 @@ export function startDispatcher(client: Client) {
     });
 
     // call the correct flow for an interaction.
-    client.on('interactionCreate', async (interaction) => {
+    client.on(Events.InteractionCreate, async (interaction) => {
         if (!interaction.isMessageComponent() && 
             !interaction.isModalSubmit()) return;
         
