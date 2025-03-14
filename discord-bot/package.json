@@ -16,5 +16,8 @@
     "redis": "^4.7.0",
     "resend": "^4.1.2",
     "typescript": "^5.8.2"
+  },
+  "devDependencies": {
+    "prettier": "^3.5.3"
   }
 }
