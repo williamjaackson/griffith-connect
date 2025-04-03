@@ -15,7 +15,7 @@ import {
 } from "discord.js";
 import { redisClient } from "../lib/redis";
 import { emailTemplate } from "../lib/resend";
-import { sql } from "../lib/database";
+import { supabase } from "../lib/database";
 import config from "../../config.json";
 import { log } from "../lib/logging";
 
@@ -92,11 +92,14 @@ async function step1(interaction: ModalSubmitInteraction) {
   }
 
   // check if this sNumber is already connected to this discord account.
-  const [existingConnection] = await sql`
-        SELECT * FROM discord_users WHERE discord_user_id = ${interaction.user.id} AND student_number = ${sNumber}
-    `;
 
-  if (existingConnection) {
+  const { data: existingConnections } = await supabase
+    .from("discord_users")
+    .select("*")
+    .eq("discord_user_id", interaction.user.id)
+    .eq("student_number", sNumber);
+
+  if (existingConnections) {
     const member = await interaction.guild!.members.fetch(interaction.user.id);
     await member.roles.add(
       config.connectedRole,
@@ -178,9 +181,14 @@ async function step3(interaction: ModalSubmitInteraction) {
   }
 
   // existing connect, but different account or student number.
-  const [existingConnection] = await sql`
-        SELECT * FROM discord_users WHERE student_number = ${sNumber} OR discord_user_id = ${interaction.user.id}
-    `;
+  const { data: existingConnections } = await supabase
+    .from("discord_users")
+    .select("*")
+    .or(
+      `discord_user_id.eq.${interaction.user.id},student_number.eq.${sNumber}`,
+    );
+
+  const [existingConnection] = existingConnections ?? [];
 
   if (existingConnection) {
     const prevConnectedMember = await interaction.guild!.members.fetch(
@@ -194,9 +202,12 @@ async function step3(interaction: ModalSubmitInteraction) {
       );
     }
 
-    await sql`
-            DELETE FROM discord_users WHERE student_number = ${sNumber} OR discord_user_id = ${interaction.user.id}
-        `;
+    await supabase
+      .from("discord_users")
+      .delete()
+      .or(
+        `student_number.eq.${sNumber},discord_user_id.eq.${interaction.user.id}`,
+      );
 
     await log(
       interaction.client,
@@ -204,10 +215,10 @@ async function step3(interaction: ModalSubmitInteraction) {
     );
   }
 
-  await sql`
-        INSERT INTO discord_users (discord_user_id, student_number)
-        VALUES (${interaction.user.id}, ${sNumber})
-    `;
+  await supabase.from("discord_users").insert({
+    discord_user_id: interaction.user.id,
+    student_number: sNumber,
+  });
 
   const member = await interaction.guild!.members.fetch(interaction.user.id);
   await member.roles.add(
