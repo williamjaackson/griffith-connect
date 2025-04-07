@@ -99,7 +99,7 @@ async function step1(interaction: ModalSubmitInteraction) {
     .eq("discord_user_id", interaction.user.id)
     .eq("student_number", sNumber);
 
-  if (existingConnections) {
+  if (existingConnections?.length) {
     const member = await interaction.guild!.members.fetch(interaction.user.id);
     await member.roles.add(
       config.connectedRole,
