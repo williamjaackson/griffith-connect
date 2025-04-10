@@ -211,6 +211,10 @@ async function step3(interaction: ModalSubmitInteraction) {
     );
   }
 
+  await supabase.from("Student").insert({
+    student_number: sNumber,
+  });
+
   await supabase.from("DiscordUser").insert({
     id: interaction.user.id,
     student_number: sNumber,
