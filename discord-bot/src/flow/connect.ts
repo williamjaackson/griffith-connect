@@ -186,11 +186,11 @@ async function step3(interaction: ModalSubmitInteraction) {
     .select("*")
     .or(`id.eq.${interaction.user.id},student_number.eq.${sNumber}`);
 
-  const [existingConnection] = existingConnections ?? [];
+  // const [existingConnection] = existingConnections ?? [];
 
-  if (existingConnection) {
+  for (const existingConnection of existingConnections ?? []) {
     const prevConnectedMember = await interaction.guild!.members.fetch(
-      existingConnection.discord_user_id,
+      existingConnection.id,
     );
 
     if (prevConnectedMember) {
