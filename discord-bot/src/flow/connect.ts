@@ -94,9 +94,9 @@ async function step1(interaction: ModalSubmitInteraction) {
   // check if this sNumber is already connected to this discord account.
 
   const { data: existingConnections } = await supabase
-    .from("discord_users")
+    .from("DiscordUser")
     .select("*")
-    .eq("discord_user_id", interaction.user.id)
+    .eq("id", interaction.user.id)
     .eq("student_number", sNumber);
 
   if (existingConnections?.length) {
@@ -182,11 +182,9 @@ async function step3(interaction: ModalSubmitInteraction) {
 
   // existing connect, but different account or student number.
   const { data: existingConnections } = await supabase
-    .from("discord_users")
+    .from("DiscordUser")
     .select("*")
-    .or(
-      `discord_user_id.eq.${interaction.user.id},student_number.eq.${sNumber}`,
-    );
+    .or(`id.eq.${interaction.user.id},student_number.eq.${sNumber}`);
 
   const [existingConnection] = existingConnections ?? [];
 
@@ -203,11 +201,9 @@ async function step3(interaction: ModalSubmitInteraction) {
     }
 
     await supabase
-      .from("discord_users")
+      .from("DiscordUser")
       .delete()
-      .or(
-        `student_number.eq.${sNumber},discord_user_id.eq.${interaction.user.id}`,
-      );
+      .or(`student_number.eq.${sNumber},id.eq.${interaction.user.id}`);
 
     await log(
       interaction.client,
@@ -215,8 +211,8 @@ async function step3(interaction: ModalSubmitInteraction) {
     );
   }
 
-  await supabase.from("discord_users").insert({
-    discord_user_id: interaction.user.id,
+  await supabase.from("DiscordUser").insert({
+    id: interaction.user.id,
     student_number: sNumber,
   });
 
