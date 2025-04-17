@@ -233,7 +233,7 @@ async function step3(interaction: ModalSubmitInteraction) {
   await log(interaction.client, `${interaction.user} connected to ${sNumber}`);
 }
 
-export async function handler(interaction: any, stage: number) {
+export async function handler(interaction: any, stage: number, args: string[]) {
   if (stage === 0) return entry(interaction);
   if (stage === 1) return step1(interaction);
   if (stage === 2) return step2(interaction);
