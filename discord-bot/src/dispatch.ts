@@ -20,12 +20,12 @@ export function startDispatcher(client: Client) {
 
     if (!interaction.guild) return;
 
-    const [system, action, step] = interaction.customId.split(":");
+    const [system, action, step, ...args] = interaction.customId.split(":");
     if (system !== "flow") return;
 
     try {
       const flow = await flowCache.get(action);
-      await flow["handler"](interaction, parseInt(step));
+      await flow["handler"](interaction, parseInt(step), args);
     } catch (err: any) {
       console.error(err);
       await interaction.reply({
