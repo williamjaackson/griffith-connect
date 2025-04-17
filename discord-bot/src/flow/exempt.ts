@@ -52,6 +52,40 @@ async function step1(interaction: ButtonInteraction) {
     Date.now().toString(),
   );
 
+  // ask the user to provide a reason for the exemption.
+  await interaction.editReply({
+    content: "Please provide a reason for the exemption.",
+    components: [
+      new ActionRowBuilder<ButtonBuilder>().addComponents([
+        new ButtonBuilder()
+          .setCustomId(`flow:${FLOW}:2:alumni`)
+          .setLabel("I am a previous student.")
+          .setStyle(ButtonStyle.Secondary),
+      ]),
+      new ActionRowBuilder<ButtonBuilder>().addComponents([
+        new ButtonBuilder()
+          .setCustomId(`flow:${FLOW}:2:different-university`)
+          .setLabel("I am a student at another university.")
+          .setStyle(ButtonStyle.Secondary),
+      ]),
+      new ActionRowBuilder<ButtonBuilder>().addComponents([
+        new ButtonBuilder()
+          .setCustomId(`flow:${FLOW}:2:other`)
+          .setLabel("Other")
+          .setStyle(ButtonStyle.Secondary),
+      ]),
+    ],
+  });
+}
+
+async function step2(interaction: ButtonInteraction, reason: string) {
+  if (interaction.channel?.type !== ChannelType.GuildText) return;
+
+  await interaction.deferReply({
+    withResponse: true,
+    flags: [MessageFlags.Ephemeral],
+  });
+
   const thread = await interaction.channel?.threads.create({
     name: `Exemption Request - @${interaction.user.username}`,
     reason: `Exemption request created by @${interaction.user.tag} (${interaction.user.id})`,
@@ -60,7 +94,7 @@ async function step1(interaction: ButtonInteraction) {
   });
 
   await thread.send({
-    content: `# Exemption Application\n> Reviewers: <@&${config.exemptPingRole}>\n> User: ${interaction.user}\nPlease provide any additional details/explaination below.`,
+    content: `# Exemption Application\n> Reviewers: <@&${config.exemptPingRole}>\n> User: ${interaction.user}\n> Selected Reason: \`${reason}\`\nPlease provide any additional details/explaination below.`,
   });
 
   await interaction.editReply({
@@ -73,8 +107,9 @@ async function step1(interaction: ButtonInteraction) {
   );
 }
 
-export async function handler(interaction: any, stage: number) {
+export async function handler(interaction: any, stage: number, args: string[]) {
   if (stage === 0) return entry(interaction);
   if (stage === 1) return step1(interaction);
+  if (stage === 2) return step2(interaction, args[0]);
   throw new Error("Invalid flow stage.");
 }
