@@ -118,7 +118,7 @@ async function step1(interaction: ModalSubmitInteraction) {
     return;
   }
 
-  const otp = randomInt(100000, 999999).toString();
+  const otp = randomInt(0, 999999).toString().padStart(6, "0");
   await redisClient.setEx(`otp:${otp}`, 600, sNumber);
 
   await emailTemplate(
