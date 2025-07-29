@@ -187,16 +187,18 @@ async function step3(interaction: ModalSubmitInteraction) {
     .or(`id.eq.${interaction.user.id},student_number.eq.${sNumber}`);
 
   // const [existingConnection] = existingConnections ?? [];
-
   for (const existingConnection of existingConnections ?? []) {
     const prevConnectedMember = await interaction.guild!.members.fetch(
       existingConnection.id,
-    );
-
+    ).catch((err: any) => {
+      console.error("Failed to fetch member:", err);
+      return null;
+    });
+    
     if (prevConnectedMember) {
       await prevConnectedMember.roles.remove(
         config.connectedRole,
-        `Unconnected sNumber. (${sNumber})`,
+        `Unconnected sNumber. (${existingConnection.student_number})`,
       );
     }
 
@@ -205,9 +207,11 @@ async function step3(interaction: ModalSubmitInteraction) {
       .delete()
       .or(`student_number.eq.${sNumber},id.eq.${interaction.user.id}`);
 
+    const pingMsg = prevConnectedMember ? `${prevConnectedMember.user}` : `<@${existingConnection.id}>`;
+
     await log(
       interaction.client,
-      `${prevConnectedMember.user} disconnected from ${existingConnection.student_number} by ${interaction.user}`,
+      `${pingMsg} disconnected from ${existingConnection.student_number} by ${interaction.user}`,
     );
   }
 
