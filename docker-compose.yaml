@@ -4,13 +4,13 @@ services:
     restart: unless-stopped
     depends_on:
       - redis
-    networks:
-      - griffith-connect
+    # networks:
+    #   - griffith-connect
   redis:
     image: redis:latest
     restart: unless-stopped
-    networks:
-      - griffith-connect
+    # networks:
+    #   - griffith-connect
   
-networks:
-  griffith-connect:
+# networks:
+#   griffith-connect:
